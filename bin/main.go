@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/abhishekdiwan1227/avo"
 	"gorm.io/driver/sqlite"
@@ -30,18 +29,6 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	db.Create(&avo.Work{
-		Name: "Dummy Work",
-		Schedule: &avo.Schedule{
-			ScheduleDetail: &avo.ScheduleDetail{
-				Interval:     func(i int) *int { return &i }(1000),
-				IntervalKind: func(i time.Duration) *time.Duration { return &i }(time.Millisecond),
-			},
-			ScheduleType: avo.Interval,
-		},
-	})
-	// create dummy data for work with schedule type cron
 
 	avo.Init(db)
 }
