@@ -6,15 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type Work struct {
+type Task struct {
 	gorm.Model
-	Name       string
-	ScheduleID int
-	Schedule   *Schedule
+	Name               string
+	ScheduleID         int
+	Schedule           *Schedule
+	Active             bool                `gorm:"default:true"`
+	TaskDefinitionID   *int                `gorm:"index:idx_task_definition"`
+	TaskDefinitionType *TaskDefinitionType `gorm:"index:idx_task_definition"`
 }
 
 type ScheduleType int
-type IntervalKind int
 
 const (
 	Interval ScheduleType = iota
@@ -47,10 +49,22 @@ type ScheduleDetail struct {
 }
 
 type Workload struct {
-	Work Work
-	fn   func(*Work)
+	Task Task
+	fn   func(*Task)
 }
 
-func (w *Workload) Do() {
-	w.fn(&w.Work)
+func (w *Workload) Do() { w.fn(&w.Task) }
+
+type TaskDefinitionType int
+
+const (
+	Local TaskDefinitionType = iota
+)
+
+type ScriptTaskDefinition struct {
+	gorm.Model
+	TaskID    uint
+	Path      string
+	Arguments *string
+	Priority  *int
 }

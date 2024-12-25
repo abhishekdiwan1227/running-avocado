@@ -1,34 +1,37 @@
 package main
 
 import (
-	"errors"
-	"os"
-	"path/filepath"
+	"fmt"
+	"sync"
+	"time"
 
 	"github.com/abhishekdiwan1227/avo"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
+var wagonTicker *time.Ticker = time.NewTicker(avo.GetConfig().Ticker.TickerDuration * time.Duration(avo.GetConfig().Ticker.TickerValue))
+var wgi sync.WaitGroup
+
 func main() {
-	homePathString := os.Getenv("HOME")
-	projectDir := filepath.Join(homePathString, ".avo")
-	dbPath := filepath.Join(projectDir, "avo.db")
-	if _, err := os.Stat(dbPath); errors.Is(err, os.ErrNotExist) {
-		err = os.MkdirAll(projectDir, os.ModePerm)
-		if err != nil {
-			panic(err.Error())
-		}
-	}
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
-	if err != nil {
-		panic(err.Error())
-	}
+	avo.Start()
+	wgi.Add(1)
+	wagon := avo.StartWagon()
+	startWorkReminder(wagon)
+	wgi.Wait()
+}
 
-	err = db.AutoMigrate(&avo.Work{})
-	if err != nil {
-		panic(err.Error())
-	}
+func startWorkReminder(wagon *avo.DataWagon) {
+	for {
+		tick := (<-wagonTicker.C).UTC()
+		fmt.Printf("[%s] Checking for work\n", tick)
+		next := tick.Add(5 * time.Second)
 
-	avo.Init(db)
+		works := make(chan struct {
+			avo.Task
+			time.Time
+		})
+		wgi.Add(1)
+		go avo.StartQueue(&works)
+		wagon.GetNextPassengers(next, &works)
+		wgi.Done()
+	}
 }
