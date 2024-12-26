@@ -3,7 +3,6 @@ package avo
 import (
 	"errors"
 	"os"
-	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -64,28 +63,6 @@ func initializeApp() {
 	}
 
 	app.Wagon = StartWagon()
-
-	task := &Task{
-		Name: "TestTask",
-		Schedule: &Schedule{
-			ScheduleType: Interval,
-			ScheduleDetail: &ScheduleDetail{
-				Interval:     func(interval int) *int { return &interval }(4),
-				IntervalKind: func(intervalKind time.Duration) *time.Duration { return &intervalKind }(time.Second),
-			},
-		},
-	}
-	db.Create(task)
-
-	def := &ScriptTaskDefinition{
-		Path: path.Join(homePathString, "test.sh"),
-	}
-	db.Create(def)
-	task.TaskDefinitionID = &def.ID
-	task.TaskDefinitionType = func(defType TaskDefinitionType) *TaskDefinitionType { return &defType }(Local)
-
-	db.Save(task)
-
 }
 
 func GetConfig() *App {
