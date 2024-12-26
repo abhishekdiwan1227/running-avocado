@@ -12,6 +12,10 @@ type DataWagon struct {
 	db *gorm.DB
 }
 
+type TaskDefinition interface {
+	ScriptTaskDefinition
+}
+
 func StartWagon() *DataWagon {
 	return &DataWagon{db: GetConfig().DB}
 }
@@ -66,6 +70,12 @@ func (dw *DataWagon) GetNextPassengers(till time.Time, workPassengers *chan stru
 			}{work, i}
 		}
 	}
+}
+
+func (dw *DataWagon) GetScriptDefinition(taskId uint) *ScriptTaskDefinition {
+	definition := ScriptTaskDefinition{TaskId: taskId}
+	dw.db.First(&definition)
+	return &definition
 }
 
 func (dw *DataWagon) AddWork(work *Task) {

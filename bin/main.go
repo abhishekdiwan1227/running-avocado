@@ -14,12 +14,11 @@ var wgi sync.WaitGroup
 func main() {
 	avo.Start()
 	wgi.Add(1)
-	wagon := avo.StartWagon()
-	startWorkReminder(wagon)
+	startWorkReminder()
 	wgi.Wait()
 }
 
-func startWorkReminder(wagon *avo.DataWagon) {
+func startWorkReminder() {
 	for {
 		tick := (<-wagonTicker.C).UTC()
 		fmt.Printf("[%s] Checking for work\n", tick)
@@ -31,6 +30,7 @@ func startWorkReminder(wagon *avo.DataWagon) {
 		})
 		wgi.Add(1)
 		go avo.StartQueue(&works)
+		wagon := avo.GetConfig().Wagon
 		wagon.GetNextPassengers(next, &works)
 		wgi.Done()
 	}

@@ -12,7 +12,7 @@ type Task struct {
 	ScheduleID         int
 	Schedule           *Schedule
 	Active             bool                `gorm:"default:true"`
-	TaskDefinitionID   *int                `gorm:"index:idx_task_definition"`
+	TaskDefinitionID   *uint               `gorm:"index:idx_task_definition"`
 	TaskDefinitionType *TaskDefinitionType `gorm:"index:idx_task_definition"`
 }
 
@@ -63,8 +63,7 @@ const (
 
 type ScriptTaskDefinition struct {
 	gorm.Model
-	TaskID    uint
+	TaskId    uint
 	Path      string
 	Arguments *string
-	Priority  *int
 }

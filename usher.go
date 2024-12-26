@@ -1,5 +1,0 @@
-package avo
-
-func Spawn() {
-
-}

@@ -40,6 +40,8 @@ func scheduleWork(delay time.Duration, work Task) {
 			wg.Add(1)
 			time.AfterFunc(delay, func() {
 				fmt.Printf("[%s] Running %s\n", time.Now().UTC(), currentWork.Name)
+				runner := CreateRunner(*currentWork)
+				runner.Run()
 				wg.Done()
 			})
 		}
