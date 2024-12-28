@@ -63,7 +63,14 @@ const (
 
 type ScriptTaskDefinition struct {
 	gorm.Model
-	TaskId    uint
+	TaskID    uint
 	Path      string
 	Arguments *string
+}
+
+type Job struct {
+	gorm.Model
+	TaskID    uint
+	StartedAt time.Time
+	EndedAt   time.Time
 }

@@ -72,8 +72,8 @@ func (dw *DataWagon) GetNextPassengers(till time.Time, workPassengers *chan stru
 	}
 }
 
-func (dw *DataWagon) GetScriptDefinition(taskId uint) *ScriptTaskDefinition {
-	definition := ScriptTaskDefinition{TaskId: taskId}
+func (dw *DataWagon) GetScriptDefinition(taskID uint) *ScriptTaskDefinition {
+	definition := ScriptTaskDefinition{TaskID: taskID}
 	dw.db.First(&definition)
 	return &definition
 }

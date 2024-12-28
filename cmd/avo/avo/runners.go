@@ -2,6 +2,8 @@ package avo
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 )
@@ -25,6 +27,10 @@ type LocalScriptRunner struct {
 func (runner *LocalScriptRunner) Run() {
 	wagon := GetConfig().Wagon
 	definition := wagon.GetScriptDefinition(runner.Task.ID)
+
+	if _, err := os.Stat(definition.Path); errors.Is(err, os.ErrNotExist) {
+		panic(fmt.Errorf("file not found at %s", definition.Path))
+	}
 
 	var arguments []string
 	if definition.Arguments != nil && len(*definition.Arguments) > 0 {

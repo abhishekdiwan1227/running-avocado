@@ -26,7 +26,6 @@ func schedule(works *chan struct {
 }) {
 	for work := range *works {
 		now := time.Now().UTC()
-		fmt.Println("Now", now)
 		delay := work.Time.Sub(now)
 
 		fmt.Printf("%s is scheduled to run in %f\n", work.Name, delay.Seconds())

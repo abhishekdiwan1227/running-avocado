@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abhishekdiwan1227/avo"
+	"github.com/abhishekdiwan1227/avo/cmd/avo/avo"
 )
 
 var wagonTicker *time.Ticker = time.NewTicker(avo.GetConfig().Ticker.TickerDuration * time.Duration(avo.GetConfig().Ticker.TickerValue))
