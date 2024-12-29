@@ -1,7 +1,7 @@
 package avo
 
 import (
-	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -28,7 +28,7 @@ func schedule(works *chan struct {
 		now := time.Now().UTC()
 		delay := work.Time.Sub(now)
 
-		fmt.Printf("%s is scheduled to run in %f\n", work.Name, delay.Seconds())
+		log.Printf("%s is scheduled to run in %f\n", work.Name, delay.Seconds())
 		scheduleWork(delay, work.Task)
 	}
 }
@@ -38,7 +38,7 @@ func scheduleWork(delay time.Duration, work Task) {
 		fn := func(currentWork *Task) {
 			wg.Add(1)
 			time.AfterFunc(delay, func() {
-				fmt.Printf("[%s] Running %s\n", time.Now().UTC(), currentWork.Name)
+				log.Printf("Running %s\n", currentWork.Name)
 				runner := CreateRunner(*currentWork)
 				runner.Run()
 				wg.Done()

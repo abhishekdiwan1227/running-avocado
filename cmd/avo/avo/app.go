@@ -2,7 +2,11 @@ package avo
 
 import (
 	"errors"
+	"fmt"
+	"io"
+	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -63,6 +67,23 @@ func initializeApp() {
 	}
 
 	app.Wagon = StartWagon()
+
+	logFileName := fmt.Sprintf("%s_avocado.log", time.Now().Format("2006-01-02"))
+	logFileDir := path.Join(projectDir, "logs")
+	if _, err := os.Stat(logFileDir); errors.Is(err, os.ErrNotExist) {
+		err = os.MkdirAll(logFileDir, os.ModePerm)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	logFilePath := path.Join(logFileDir, logFileName)
+	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 }
 
 func GetConfig() *App {

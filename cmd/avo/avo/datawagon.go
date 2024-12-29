@@ -1,7 +1,7 @@
 package avo
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/cronexpr"
@@ -63,7 +63,7 @@ func (dw *DataWagon) GetNextPassengers(till time.Time, workPassengers *chan stru
 		}
 
 		for i := next; i.Before(tillUtc); i = i.Add(interval) {
-			fmt.Printf("Scheduled %s at %s\n", work.Name, i)
+			log.Printf("Scheduled %s at %s\n", work.Name, i)
 			*workPassengers <- struct {
 				Task
 				time.Time

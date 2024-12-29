@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -21,7 +21,7 @@ func main() {
 func startWorkReminder() {
 	for {
 		tick := (<-wagonTicker.C).UTC()
-		fmt.Printf("[%s] Checking for work\n", tick)
+		log.Print("Checking for work")
 		next := tick.Add(5 * time.Second)
 
 		works := make(chan struct {
