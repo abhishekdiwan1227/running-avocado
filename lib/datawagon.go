@@ -1,35 +1,37 @@
-package avo
+package avocado
 
 import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/cronexpr"
 	"gorm.io/gorm"
 )
 
 type DataWagon struct {
-	db *gorm.DB
+	DB *gorm.DB
 }
 
 type TaskDefinition interface {
 	ScriptTaskDefinition
 }
 
-func StartWagon() *DataWagon {
-	return &DataWagon{db: GetConfig().DB}
+func StartWagon(db *gorm.DB) *DataWagon {
+	return &DataWagon{DB: db}
 }
 
 func (dw *DataWagon) GetAllWorkPassengers() *[]Task {
 	var works []Task
-	dw.db.Joins("Schedule").Joins("Schedule.ScheduleDetail").Find(&works)
+	dw.DB.Joins("Schedule").Joins("Schedule.ScheduleDetail").Find(&works)
 	return &works
 }
 
 func (dw *DataWagon) GetNextPassengers(till time.Time, workPassengers *chan struct {
 	Task
 	time.Time
-}) {
+},
+) {
 	nowUtc := time.Now().UTC()
 	tillUtc := till.UTC()
 	works := dw.GetAllWorkPassengers()
@@ -74,10 +76,45 @@ func (dw *DataWagon) GetNextPassengers(till time.Time, workPassengers *chan stru
 
 func (dw *DataWagon) GetScriptDefinition(taskID uint) *ScriptTaskDefinition {
 	definition := ScriptTaskDefinition{TaskID: taskID}
-	dw.db.First(&definition)
+	dw.DB.First(&definition)
 	return &definition
 }
 
-func (dw *DataWagon) AddWork(work *Task) {
-	dw.db.Create(work)
+func (dw *DataWagon) AddScriptDefinition(definition *ScriptTaskDefinition, task *Task) {
+	taskType := Local
+	dw.DB.Create(definition)
+
+	task.TaskDefinitionID = &definition.ID
+	task.TaskDefinitionType = &taskType
+
+	dw.DB.Save(task)
+}
+
+func (dw *DataWagon) AddTask(work *Task) {
+	dw.DB.Create(work)
+}
+
+func (dw *DataWagon) AddNewJob(taskID uint) *Job {
+	job := &Job{
+		TaskID:    taskID,
+		StartedAt: time.Now().UTC(),
+		JobID:     uuid.New(),
+	}
+	dw.DB.Create(job)
+	return job
+}
+
+func (dw *DataWagon) MigrateDatabase() {
+	err := dw.DB.AutoMigrate(&Task{}, &ScriptTaskDefinition{}, &Job{})
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+func (dw *DataWagon) CompleteJobEntry(job *Job, returnCode int) {
+	endTime := time.Now().UTC()
+	job.EndedAt = &endTime
+	job.ReturnCode = &returnCode
+
+	dw.DB.Save(job)
 }

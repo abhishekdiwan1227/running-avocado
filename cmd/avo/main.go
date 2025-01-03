@@ -5,14 +5,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abhishekdiwan1227/avo/cmd/avo/avo"
+	"github.com/abhishekdiwan1227/running-avocado/cmd/avo/avo"
+	"github.com/abhishekdiwan1227/running-avocado/lib"
 )
 
-var wagonTicker *time.Ticker = time.NewTicker(avo.GetConfig().Ticker.TickerDuration * time.Duration(avo.GetConfig().Ticker.TickerValue))
-var wgi sync.WaitGroup
+var (
+	wagonTicker *time.Ticker = time.NewTicker(avocado.GetConfig().Ticker.TickerDuration * time.Duration(avocado.GetConfig().Ticker.TickerValue))
+	wgi         sync.WaitGroup
+)
 
 func main() {
-	avo.Start()
+	avocado.Start()
 	wgi.Add(1)
 	startWorkReminder()
 	wgi.Wait()
@@ -25,12 +28,12 @@ func startWorkReminder() {
 		next := tick.Add(5 * time.Second)
 
 		works := make(chan struct {
-			avo.Task
+			avocado.Task
 			time.Time
 		})
 		wgi.Add(1)
 		go avo.StartQueue(&works)
-		wagon := avo.GetConfig().Wagon
+		wagon := avocado.GetConfig().Wagon
 		wagon.GetNextPassengers(next, &works)
 		wgi.Done()
 	}

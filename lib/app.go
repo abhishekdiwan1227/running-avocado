@@ -1,4 +1,4 @@
-package avo
+package avocado
 
 import (
 	"errors"
@@ -61,12 +61,8 @@ func initializeApp() {
 	}
 	app.DB = db
 
-	err = db.AutoMigrate(&Task{}, &ScriptTaskDefinition{})
-	if err != nil {
-		panic(err.Error())
-	}
-
-	app.Wagon = StartWagon()
+	app.Wagon = StartWagon(app.DB)
+	app.Wagon.MigrateDatabase()
 
 	logFileName := fmt.Sprintf("%s_avocado.log", time.Now().Format("2006-01-02"))
 	logFileDir := path.Join(projectDir, "logs")

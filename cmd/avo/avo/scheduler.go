@@ -4,15 +4,20 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	avocado "github.com/abhishekdiwan1227/running-avocado/lib"
 )
 
-var wg sync.WaitGroup
-var workloads chan Workload = make(chan Workload)
+var (
+	wg        sync.WaitGroup
+	workloads chan avocado.Workload = make(chan avocado.Workload)
+)
 
 func StartQueue(works *chan struct {
-	Task
+	avocado.Task
 	time.Time
-}) {
+},
+) {
 	wg.Add(1)
 	go letsThis()
 	schedule(works)
@@ -21,30 +26,29 @@ func StartQueue(works *chan struct {
 }
 
 func schedule(works *chan struct {
-	Task
+	avocado.Task
 	time.Time
-}) {
+},
+) {
 	for work := range *works {
 		now := time.Now().UTC()
-		delay := work.Time.Sub(now)
+		delay := work.Time.Sub(now).Round(time.Second)
 
-		log.Printf("%s is scheduled to run in %f\n", work.Name, delay.Seconds())
 		scheduleWork(delay, work.Task)
 	}
 }
 
-func scheduleWork(delay time.Duration, work Task) {
-	if delay > 0 {
-		fn := func(currentWork *Task) {
+func scheduleWork(delay time.Duration, work avocado.Task) {
+	if delay >= 0 {
+		func(currentWork *avocado.Task) {
 			wg.Add(1)
 			time.AfterFunc(delay, func() {
 				log.Printf("Running %s\n", currentWork.Name)
-				runner := CreateRunner(*currentWork)
-				runner.Run()
+				runner := avocado.CreateRunner(currentWork)
+				workloads <- avocado.Workload{Task: work, Runner: runner}
 				wg.Done()
 			})
-		}
-		workloads <- Workload{work, fn}
+		}(&work)
 	}
 }
 
@@ -55,9 +59,13 @@ func letsThis() {
 		if !ok {
 			return
 		}
+
+		job := avocado.GetConfig().Wagon.AddNewJob(workload.Task.ID)
+
 		wg.Add(1)
 		go func() {
-			workload.Do()
+			result := workload.Do()
+			avocado.GetConfig().Wagon.CompleteJobEntry(job, *&result.ReturnCode)
 			wg.Done()
 		}()
 	}
