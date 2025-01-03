@@ -53,8 +53,8 @@ type Workload struct {
 
 type WorkloadResult struct {
 	ReturnCode   int
-	StdoutWriter *io.Writer
-	StderrWriter *io.Writer
+	StdoutWriter io.Writer
+	StderrWriter io.Writer
 	CompletedAt  time.Time
 }
 
